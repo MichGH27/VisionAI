@@ -41,7 +41,7 @@ export default function CameraScreen() {
     if (!cameraRef.current) return;
 
     const photo = await cameraRef.current.takePictureAsync({
-      quality: 0.7,
+      quality: 0.3,
     });
 
     router.push({
