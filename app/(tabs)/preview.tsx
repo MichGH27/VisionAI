@@ -3,10 +3,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { analyzeImage } from "../../lib/gemini";
-
 export default function PreviewScreen() {
-  const { photoUri } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+
+  const photoUri = params.photoUri as string;
 
   const [loading, setLoading] = useState(false);
 
@@ -20,40 +20,21 @@ export default function PreviewScreen() {
 
       console.log("Reading image...");
 
-      const file = new File(photoUri as string);
+      const file = new File(photoUri);
 
       const base64 = await file.base64();
 
       console.log("Image converted:", base64.length);
 
-      const response = await analyzeImage(base64);
-
-      console.log("Gemini response:", response);
-
-      const result =
-        response?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response";
-
       router.push({
-        pathname: "/result",
+        pathname: "/(tabs)/result",
 
         params: {
-          photoUri: photoUri as string,
-
-          result: result,
+          base64Image: base64,
         },
       });
     } catch (error) {
-      console.log("Analyze Error:", error);
-
-      router.push({
-        pathname: "/result",
-
-        params: {
-          photoUri: photoUri as string,
-
-          result: String(error),
-        },
-      });
+      console.log("Preview Error:", error);
     } finally {
       setLoading(false);
     }
@@ -63,7 +44,7 @@ export default function PreviewScreen() {
     <View style={styles.container}>
       <Image
         source={{
-          uri: photoUri as string,
+          uri: photoUri,
         }}
         style={styles.image}
         resizeMode="contain"
@@ -84,7 +65,7 @@ export default function PreviewScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? "Analyzing..." : "Analyze"}
+            {loading ? "Preparing..." : "Analyze"}
           </Text>
         </TouchableOpacity>
       </View>
